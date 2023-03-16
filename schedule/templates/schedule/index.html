@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>my first template</title>
+</head>
+<body>
+<table>
+    <tbody>
+    <tr>
+        <td>
+            <button value="<<"> &lt;&lt;</button>
+        </td>
+        <td><h3> Schedule for today: {{ today }} - {{ day_of_week }} </h3></td>
+        <td>
+            <button value=">>"> &gt;&gt;</button>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<table border="0" cellspacing="0" cellpadding="4">
+    <thead>
+    <tr>
+        <th>Time of day</th>
+        <th> Activity</th>
+    </tr>
+    {% for activity in activity_list %}
+    {% if activity.time_slot.description == current %}
+    <tr>
+        <td style="border: 1px solid black;">
+            <b> {{activity.time_slot.description}}  </b>
+        </td>
+        <td style="border: 1px solid black;">
+            <b> {{activity.description}} </b>
+        </td>
+    </tr>
+    {% else %}
+    <tr>
+        <td>
+            {{activity.time_slot.description}}
+        </td>
+        <td>
+            {{activity.description}}
+        </td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+    </thead>
+</table>
+<br>
+<table>
+    <thead>
+    <tr>
+        <th>Time</th>
+        <th>Menu</th>
+    </tr>
+    </thead>
+</table>
+</body>
+</html>
