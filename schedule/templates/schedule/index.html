@@ -4,16 +4,21 @@
     <meta charset="UTF-8">
     <title>my first template</title>
 </head>
+<script>
+function toDay(d) {
+window.location = d
+}
+</script>
 <body>
 <table>
     <tbody>
     <tr>
         <td>
-            <button value="<<"> &lt;&lt;</button>
+            <button onclick="toDay('{% url 'detail' yesterday %}')"> &lt;&lt; </button>
         </td>
         <td><h3> Schedule for today: {{ today }} - {{ day_of_week }} </h3></td>
         <td>
-            <button value=">>"> &gt;&gt;</button>
+            <button onclick="toDay('{% url 'detail' tomorrow %}')"> &gt;&gt; </button>
         </td>
     </tr>
     </tbody>
