@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LISP-eval</title>
+  <style>
+    textarea {
+      cols:160,
+      rows: 40
+    }
+
+  </style>
+</head>
+
+<body>
+<form method="post"  >
+   {% csrf_token %}
+  Input:
+  <br>
+  <textarea cols="120" rows="15" name="inputtext">{{ inputtext }}</textarea>
+  <br>
+  <input type="submit">
+  <br>
+  Console:
+  <br>
+  <textarea cols="120" rows="15" contenteditable="false">{{ stdout }}</textarea>
+  <br>
+  STDERR:
+  <br>
+  <textarea cols="120" rows="15" disabled="true">{{ stderr }}</textarea>
+
+</form>
+</body>
+</html>

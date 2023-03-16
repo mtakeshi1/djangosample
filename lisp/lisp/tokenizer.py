@@ -1,4 +1,4 @@
-
+from .interpreter import LispError
 from typing import List
 
 single_char_tokens = '()'
