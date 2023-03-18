@@ -1,15 +1,18 @@
+from django.contrib.sessions.backends.base import SessionBase
 from django.shortcuts import render
+from django.http import HttpRequest
 
 # Create your views here.
 
 from lisp.lisp.interpreter import evaluate, LispError
 
 
-def evaluate(request):
-    source, stdout, stderr = '','',''
+def evaluateRequest(request: HttpRequest):
+    session: SessionBase = request.session
+    source, stdout, stderr = '', '', ''
     try:
         source = request.POST.get('inputtext').strip()
-        stdout = parse(source)
+        stdout = evaluate(source)
     except KeyError:
         source = ''
     except LispError as ex:
@@ -18,6 +21,6 @@ def evaluate(request):
     context = {
         'inputtext': source,
         'stdout': stdout,
-        'stderr':stderr
+        'stderr': stderr
     }
     return render(request, 'lisp/index.html', context)

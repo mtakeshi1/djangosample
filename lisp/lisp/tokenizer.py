@@ -1,4 +1,3 @@
-from .interpreter import LispError
 from typing import List
 
 single_char_tokens = '()'
@@ -25,6 +24,8 @@ def tokenize(txt: str, i: int = 0, acc=None) -> List[str]:
         return acc
     while i < len(txt) and txt[i] in token_separators:
         i += 1
+    if i >= len(txt):
+        return acc
     if txt[i] in single_char_tokens:
         s = txt[i]
         acc.append(s)

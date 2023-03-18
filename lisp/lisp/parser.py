@@ -1,21 +1,13 @@
-from .interpreter import LispError
+from __future__ import annotations
+
 from .tokenizer import tokenize
 from dataclasses import dataclass
-from typing import List
+from typing import List, Any
 
 
-def parse(inputtext):
-    tokens = tokenize(inputtext)
-    # for i in tokens
-    for i, token in enumerate(tokens):
-        if token == '(':
-            1
-        elif token == ')':
-            1
-        elif token == 'True' or token == 'False':
-            1
-
-    return 1
+class LispError(Exception):
+    def __init__(self, message):
+        super().__init__(message)
 
 
 class ParseError(LispError):
@@ -28,28 +20,43 @@ class TODO(LispError):
         super().__init__(message)
 
 
-@dataclass
 class Expression:
-    def arity(self):
+    def arity(self) -> int:
         return 1
 
-    def eval(self, bindings):
-        raise TODO()
+    def eval(self, bindings) -> Expression:
+        return ErrorExpression('not implemented')
 
-    def as_number(self, bindings):
+    def as_number(self, bindings) -> int | float:
         raise ParseError('not a number ' + str(self))
 
-    def as_boolean(self, bindings):
+    def as_boolean(self, bindings) -> bool:
         raise ParseError('not a boolean: ' + str(self))
 
-    def call(self, bindings):
-        return self.eval()
+    def call(self, bindings, args: List[Expression]) -> Expression:
+        return ErrorExpression('not callable')
+
+    def is_terminal(self):
+        return False
+
+    def resolve_symbol(self, bindings):
+        return self
 
 
-@dataclass
+@dataclass(frozen=True)
+class ErrorExpression(Expression):
+    error_message: str
+
+    def eval(self, bindings) -> Expression:
+        return self
+
+    def is_terminal(self):
+        return True
+
+
+@dataclass(frozen=True)
 class NumberLiteral(Expression):
-    def __init__(self, num_value):
-        self.num_value = num_value
+    num_value: int | float
 
     def as_number(self, bindings):
         return self.num_value
@@ -58,65 +65,95 @@ class NumberLiteral(Expression):
         return self.num_value != 0
 
     def eval(self, bindings):
-        return self.num_value
+        return self
+
+    def is_terminal(self):
+        return True
+
+    def __str__(self):
+        return str(self.num_value)
 
 
-@dataclass
+@dataclass(frozen=True)
 class StringLiteral(Expression):
-    def __init__(self, string):
-        self.string = string
+    string: str
 
     def eval(self, bindings):
-        return self.string
+        return self
 
     def as_boolean(self, bindings):
         return self.string != ''
 
+    def is_terminal(self):
+        return True
 
-@dataclass
+    def __str__(self):
+        return self.string
+
+
+@dataclass(frozen=True)
 class BooleanLiteral(Expression):
-    def __init__(self, boolean_value):
-        self.boolean_value = boolean_value
+    boolean_value: bool
 
     def eval(self, bindings):
-        return self.boolean_value
+        return self
 
-    def as_boolean(self, bindings):
+    def as_boolean(self, bindings) -> bool:
         return self.boolean_value
 
     def as_number(self, bindings):
         return 1 if self.boolean_value else 0
 
+    def is_terminal(self):
+        return True
 
-@dataclass
+    def __str__(self):
+        return str(self.boolean_value)
+
+
+@dataclass(frozen=True)
 class Symbol(Expression):
+    symbol: str
 
-    def __init__(self, symbol):
-        self.symbol = symbol
+    def eval(self, bindings) -> Expression:
+        r: Expression = bindings[self.symbol]
+        while not r.is_terminal:
+            r = r.eval(bindings)
+        return r
 
     def as_boolean(self, bindings):
-        return self.eval(bindings).as_boolean
+        return self.eval(bindings).as_boolean(bindings)
 
     def as_number(self, bindings):
-        return self.eval(bindings).as_number
+        return self.eval(bindings).as_number(bindings)
+
+    def resolve_symbol(self, bindings):
+        r = self
+        while isinstance(r, Symbol):
+            r = bindings[r.symbol]
+        return r
 
 
-@dataclass
+@dataclass(frozen=True)
 class Tuple(Expression):
-    def __init__(self, members):
-        self.members = members
+    members: List[Expression]
 
     def arity(self):
         return len(self.members)
 
-    def eval(self, bindings):
-        return [c.eval(bindings) for c in self.members]
+    def eval(self, bindings) -> Expression:
+        if self.arity() == 0:
+            return self
+        first = self.members[0].eval(bindings)
+        # first should resolve to a callable
+        return first.call(bindings, self.members[1:])
 
     def as_boolean(self, bindings):
-        return self.arity() != 0
+        return self.eval(bindings).as_boolean(bindings)
 
-    def call(self, bindings):
-        return 1
+    def as_number(self, bindings) -> int | float:
+        return self.eval(bindings).as_number(bindings)
+
 
 
 def build_ast(tokens: List[str]) -> Expression:
@@ -134,6 +171,17 @@ def build_ast(tokens: List[str]) -> Expression:
     elif head == 'False':
         return BooleanLiteral(False)
     elif head.startswith('"') and head.endswith('"'):
-        return StringLiteral(head[1:len(head)-1])
+        return StringLiteral(head[1:len(head) - 1])
+    elif head == ')':
+        raise ParseError("Unexpected ')'")
     else:
-        return 1
+        try:
+            v = int(head)
+            return NumberLiteral(v)
+        except ValueError:
+            try:
+                v = float(head)
+                return NumberLiteral(v)
+            except ValueError:
+                pass
+        return Symbol(head)

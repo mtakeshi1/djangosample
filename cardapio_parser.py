@@ -1,11 +1,11 @@
-from typing import List
+from typing import List, Optional
 
 connectors = ['de', 'com', 'c/', ' e', ' da', ' do', ',', ' ao', 'à']
 
 suffix_connectors = ['suco', 'leite', 'assado', 'com ', 'sugo', 'c/ ', 'iogurte', 'shake', 'acebolado', '(', 'refogado',
                      'e ', 'preto', 'americana', 'vitamina']
 
-meal_separators = ['arroz', 'sopa', 'espaguete', 'macarrão', 'canja']
+meal_separators = ['arroz', 'sopa', 'espaguete', 'macarrão', 'canja', 'lasanha']
 
 
 def read_file_pages(fname):
@@ -78,6 +78,7 @@ def join_split_lines(page: List[str]) -> List[str]:
     acc = join_parenthesis(acc)
     acc = connect_suffixes(acc)
     acc = split_special(acc)
+    acc = split_known(acc)
     return acc
 
 
@@ -91,6 +92,24 @@ def join_well_known(page: List[str]) -> List[str]:
         else:
             acc.append(page[i].strip())
             i += 1
+    return acc
+
+
+def split_meal(s: str, candidates: List[str]) -> List[str]:
+    for c in candidates:
+        i = s.lower().find(c)
+        if i > 0:
+            before = split_meal(s[:i], candidates)
+            after = split_meal(s[i:], candidates)
+            return before + after
+    return [s]
+
+
+def split_known(page: List[str]) -> List[str]:
+    acc = []
+    for line in page:
+        for part in split_meal(line, meal_separators):
+            acc.append(part)
     return acc
 
 
@@ -201,19 +220,27 @@ def parse_sections(page: List[str]):
 
 sections = read_file_pages('resources/cardapio-marco.txt')
 for entry in sections:
-    # for section in parse_days(entry):
-    #     print(section)
-    # print(entry)
-    # print()
     days, cafe, almoco, lanche, janta = parse_sections(join_split_lines(entry))
     print('dias')
     print(days)
-    print('cafe da manha')
-    print(cafe)
-    print('almoco')
-    print(almoco)
-    print('lanche da tarde')
-    print(lanche)
-    print('janta')
-    print(janta)
+
+    if len(days) != len(cafe):
+        print('cafe da manha')
+        print(cafe)
+        raise Exception("erro cafe da manha")
+
+    if len(almoco) != len(days):
+        print('almoco')
+        print(almoco)
+        raise Exception("erro almoco")
+
+    if len(lanche) != len(days):
+        print('lanche da tarde')
+        print(lanche)
+        raise Exception("erro lanche")
+
+    if len(janta) != len(days):
+        print('janta')
+        print(janta)
+        raise Exception("erro janta")
     print("----------------------------------------------------------")
