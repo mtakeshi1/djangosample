@@ -4,7 +4,8 @@ from django.http import HttpRequest
 
 # Create your views here.
 
-from lisp.lisp.interpreter import evaluate, LispError
+from lisp.lisp.interpreter import evaluate
+from lisp.lisp.lisp_types import LispError
 
 
 def evaluateRequest(request: HttpRequest):

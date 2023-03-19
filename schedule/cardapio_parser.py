@@ -1,4 +1,5 @@
 from typing import List, Optional
+from datetime import *
 
 connectors = ['de', 'com', 'c/', ' e', ' da', ' do', ',', ' ao', 'à']
 
@@ -200,11 +201,13 @@ def try_spread(entries: List[str]) -> List[str]:
     return acc
 
 
+labels = ['LANCHE DA MANHÃ', 'ALMOÇO', 'LANCHE DA TARDE', 'JANTAR']
+
 def parse_sections(page: List[str]):
-    lanche_manha_index = page.index('LANCHE DA MANHÃ')
-    almoco_index = page.index('ALMOÇO')
-    lanche_tarde_index = page.index('LANCHE DA TARDE')
-    jantar_index = page.index('JANTAR')
+    lanche_manha_index = page.index(labels[0])
+    almoco_index = page.index(labels[1])
+    lanche_tarde_index = page.index(labels[2])
+    jantar_index = page.index(labels[3])
 
     days = join_days([only_last_piece(d) for d in page[:lanche_manha_index]])
     cafe = page[lanche_manha_index + 1:almoco_index]
@@ -218,29 +221,48 @@ def parse_sections(page: List[str]):
     return days, cafe_map, almoco_map, lanche_map, janta_map
 
 
-sections = read_file_pages('resources/cardapio-marco.txt')
-for entry in sections:
-    days, cafe, almoco, lanche, janta = parse_sections(join_split_lines(entry))
-    print('dias')
-    print(days)
+def parse_file(filename: str, month: int, year=2023):
+    sections = read_file_pages(filename)
+    for entry in sections:
+        days, cafe, almoco, lanche, janta = parse_sections(join_split_lines(entry))
+        for day in days:
+            day_of_month = int(day.split(' ')[1])
+            d = date(year, month, day_of_month)
+            yield d, cafe[day], almoco[day], lanche[day], janta[day]
 
-    if len(days) != len(cafe):
-        print('cafe da manha')
+
+if __name__ == '__main__':
+    for day, cafe, almoco, lanche, janta in parse_file('resources/cardapio-marco.txt', 3):
+        print(day.isoformat())
         print(cafe)
-        raise Exception("erro cafe da manha")
-
-    if len(almoco) != len(days):
-        print('almoco')
         print(almoco)
-        raise Exception("erro almoco")
-
-    if len(lanche) != len(days):
-        print('lanche da tarde')
         print(lanche)
-        raise Exception("erro lanche")
-
-    if len(janta) != len(days):
-        print('janta')
         print(janta)
-        raise Exception("erro janta")
-    print("----------------------------------------------------------")
+        print('------------------------------------')
+
+# sections = read_file_pages('resources/cardapio-marco.txt')
+# for entry in sections:
+#     days, cafe, almoco, lanche, janta = parse_sections(join_split_lines(entry))
+#     print('dias')
+#     print(days)
+#
+#     if len(days) != len(cafe):
+#         print('cafe da manha')
+#         print(cafe)
+#         raise Exception("erro cafe da manha")
+#
+#     if len(almoco) != len(days):
+#         print('almoco')
+#         print(almoco)
+#         raise Exception("erro almoco")
+#
+#     if len(lanche) != len(days):
+#         print('lanche da tarde')
+#         print(lanche)
+#         raise Exception("erro lanche")
+#
+#     if len(janta) != len(days):
+#         print('janta')
+#         print(janta)
+#         raise Exception("erro janta")
+#     print("----------------------------------------------------------")

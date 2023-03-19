@@ -31,3 +31,6 @@ class MenuEntry(models.Model):
     entry_date = models.DateField('date of the entry')
     entry_time = models.ForeignKey(TimeSlot, on_delete=models.CASCADE)
     entry = models.CharField(max_length=1500)
+
+    def __str__(self):
+        return f'{self.entry_date.isoformat()} - {self.entry_time.description}: {self.entry}'

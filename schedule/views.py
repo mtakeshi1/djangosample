@@ -16,8 +16,8 @@ dtz.activate(zone)
 
 datetime_format = '%d-%m-%Y %H:%M'
 
+
 def detail(request, date):
-    print(date)
     now = datetime.strptime(date, datetime_format).astimezone(zone)
     tomorrow = (now + timedelta(days=1)).strftime(datetime_format)
     yesterday = (now - timedelta(days=1)).strftime(datetime_format)
@@ -25,10 +25,12 @@ def detail(request, date):
     day_of_week = DayOfWeek.objects.get(name=weekday)
     activity_list = sorted(DailyActivity.objects.filter(day_of_week=day_of_week),
                            key=lambda da: da.time_slot.description)
-    tss = [da.time_slot.description for da in activity_list ]
+    tss = [da.time_slot.description for da in activity_list]
     i = bisect_left(tss, now.strftime('%H:%m'))
-    current = tss[i-1] if i > 0 else None
+    current = tss[i - 1] if i > 0 else None
     template = loader.get_template('schedule/index.html')
+
+    menu_entries = MenuEntry.objects.filter(entry_date=now.date())
 
     context = {
         'today': now.strftime('%d-%m-%Y %H:%m'),
@@ -36,7 +38,8 @@ def detail(request, date):
         'activity_list': activity_list,
         'current': current,
         'tomorrow': tomorrow,
-        'yesterday': yesterday
+        'yesterday': yesterday,
+        'menu_entries': menu_entries,
     }
     return HttpResponse(template.render(context, request))
 

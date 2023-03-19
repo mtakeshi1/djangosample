@@ -16,7 +16,9 @@ window.location = d
         <td>
             <button onclick="toDay('{% url 'detail' yesterday %}')"> &lt;&lt; </button>
         </td>
-        <td><h3> Schedule for today: {{ today }} - {{ day_of_week }} </h3></td>
+        <td><h3> Schedule for: {{ today }} - {{ day_of_week }} </h3>
+        <button onclick="toDay('{% url 'index' %}')"> today </button>
+        </td>
         <td>
             <button onclick="toDay('{% url 'detail' tomorrow %}')"> &gt;&gt; </button>
         </td>
@@ -60,6 +62,16 @@ window.location = d
         <th>Time</th>
         <th>Menu</th>
     </tr>
+    {% for menu_entry in menu_entries %}
+        <tr>
+        <td>
+            {{menu_entry.entry_time.description}}
+        </td>
+        <td>
+            {{menu_entry.entry}}
+        </td>
+    </tr>
+    {% endfor %}
     </thead>
 </table>
 </body>
