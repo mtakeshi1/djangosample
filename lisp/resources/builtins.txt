@@ -1,0 +1,6 @@
+(def != (a b) (not (== a b)))
+(def len (x) (if (== x ()) 0 (+ 1 (len (tail (x))))))
+(def empty (x) (== x ()))
+
+(def map (x func) (if (empty x) () (prepend (func (head x) (map ((tail x) func))))))
+
